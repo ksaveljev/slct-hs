@@ -1,2 +1,6 @@
+import SLCT.Constants
+
 main :: IO()
-main = undefined
+main = do
+    let x = maxLineLength constants
+    putStr $ show x
