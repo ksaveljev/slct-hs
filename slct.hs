@@ -8,8 +8,10 @@ import qualified Data.Map.Strict as Map
 import Data.List (foldl')
 import Data.Word (Word32, Word64)
 import System.IO (Handle, hIsEOF, stdin)
+import Options.Applicative
 
 import SLCT.Constants
+import SLCT.Options
 import qualified SLCT.ByteStringHash as BSHash
 
 -- TODO: consider a hash with better distribution
@@ -29,7 +31,15 @@ populate hashes h = do
              let hashes' = foldl' (\m w -> Map.insertWith (+) (hash w) 1 m) hashes ws
              populate hashes' h
 
+-- TODO: remove it, temporary for testing
+printOptions :: Options -> IO()
+printOptions o = do
+    putStrLn $ show o
+
 main :: IO()
 main = do
+    printOptions =<< execParser (optionsParser `withInfo` "SLCT-hs version 0.1.0.0, Copyright AUTHORS")
     m <- populate Map.empty stdin
     putStr $ show $ Map.size m
+    where
+      withInfo opts desc = info (helper <*> opts) $ progDesc desc
