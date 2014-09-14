@@ -16,9 +16,11 @@ import qualified SLCT.ByteStringHash as BSHash
 
 -- TODO: consider a hash with better distribution
 hash :: ByteString -> Word64
+{-# INLINE hash #-}
 hash = BSHash.shiftAddXor
 
 splitWords :: ByteString -> [ByteString]
+{-# INLINE splitWords #-}
 splitWords = C.split ' '
 
 populate :: Map Word64 Word32 -> Handle -> IO (Map Word64 Word32)
