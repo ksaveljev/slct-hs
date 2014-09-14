@@ -8,7 +8,7 @@ data Options = Options { byteOffset :: Int
                        , filterRegex :: Maybe String
                        , sliceSize :: Int
                        , initialSeed :: Int
-                       , join :: Bool
+                       , allowJoin :: Bool
                        , outliersFile :: Maybe String
                        , refine :: Bool
                        , support :: Double
@@ -16,6 +16,7 @@ data Options = Options { byteOffset :: Int
                        , vectorSize :: Int
                        , wordTableSize :: Int
                        , clusterVectorSize :: Int
+                       , inputFiles :: [String]
                        } deriving (Show)
 
 optionsParser :: Parser Options
@@ -34,6 +35,7 @@ optionsParser = Options
               <*> option auto (short 'v' <> value 0 <> metavar "VECTORSIZE")
               <*> option auto (short 'w' <> value 100000 <> metavar "WORDTABLESIZE")
               <*> option auto (short 'z' <> value 0 <> metavar "CLUSTERVECTORSIZE")
+              <*> strArguments (metavar "INPUT")
 
 -- We could use `optional` from Control.Applicative but this is just to
 -- learn the way optional works
@@ -42,3 +44,6 @@ strOptional flags = Just <$> strOption flags <|> pure Nothing
 
 strMultiple :: Mod OptionFields String -> Parser (Maybe [String])
 strMultiple flags = Just <$> many (strOption flags) <|> pure Nothing
+
+strArguments :: Mod ArgumentFields String -> Parser [String]
+strArguments = many . strArgument
