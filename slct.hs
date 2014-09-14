@@ -17,8 +17,9 @@ import SLCT.Options
 import qualified SLCT.ByteStringHash as BSHash
 
 type Hash = Int
-type Hashes = IntMap Word32
-type Clusters = Map ByteString Word32
+type Count = Word32
+type Hashes = IntMap Count
+type Clusters = Map ByteString Count
 
 hash :: ByteString -> Hash
 {-# INLINE hash #-}
@@ -28,11 +29,11 @@ splitWords :: ByteString -> [ByteString]
 {-# INLINE splitWords #-}
 splitWords = C.split ' '
 
-clusterify :: Hashes -> [ByteString] -> ByteString
-clusterify freq ws = BS.concat $ intersperse " " $ map (\w -> if frequent w then w else "*") ws
+clusterify :: Hashes -> Count -> [ByteString] -> ByteString
+clusterify freq wf ws = BS.concat $ intersperse " " $ map (\w -> if frequent w then w else "*") ws
     where
       frequent :: ByteString -> Bool
-      frequent w = case IntMap.lookup (hash w) freq of Just i -> i >= 10000
+      frequent w = case IntMap.lookup (hash w) freq of Just i -> i >= wf
                                                        Nothing -> False
 
 wordFrequency :: Hashes -> Handle -> IO Hashes
@@ -45,15 +46,15 @@ wordFrequency hashes h = do
              let hashes' = foldl' (\m w -> IntMap.insertWith (+) (hash w) 1 m) hashes ws
              wordFrequency hashes' h
 
-populateClusters :: Hashes -> Clusters -> Handle -> IO Clusters
-populateClusters freq clusters h = do
+populateClusters :: Hashes -> Count -> Clusters -> Handle -> IO Clusters
+populateClusters freq wf clusters h = do
     eof <- hIsEOF h
     if eof then return clusters
            else do
              l <- BS.hGetLine h
              let ws = splitWords l
-             let cluster = clusterify freq ws
-             populateClusters freq (Map.insertWith (+) cluster 1 clusters) h
+             let cluster = clusterify freq wf ws
+             populateClusters freq wf (Map.insertWith (+) cluster 1 clusters) h
 
 main :: IO()
 main = do
@@ -67,7 +68,7 @@ main = do
 
     -- return to beginning of input files for a second pass
     mapM_ (\h -> hSeek h AbsoluteSeek 0) inputs
-    clusters <- foldM (populateClusters frequentWords) Map.empty inputs
+    clusters <- foldM (populateClusters frequentWords (fromIntegral $ minWordFreq opts)) Map.empty inputs
 
     -- print stats
     putStrLn $ "total distinct words: " ++ show (IntMap.size frequentWords)
