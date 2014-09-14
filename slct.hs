@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad (foldM, when)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
@@ -7,8 +8,8 @@ import Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as Map
 import Data.List (foldl')
 import Data.Word (Word32)
-import System.IO (Handle, hIsEOF, stdin)
 import Options.Applicative
+import System.IO (Handle, IOMode(ReadMode), hIsEOF, openFile)
 
 import SLCT.Options
 import qualified SLCT.ByteStringHash as BSHash
@@ -36,8 +37,13 @@ populate hashes h = do
 
 main :: IO()
 main = do
-    print =<< execParser (optionsParser `withInfo` "SLCT-hs version 0.1.0.0, Copyright AUTHORS")
-    m <- populate Map.empty stdin
+    opts <- execParser (optionsParser `withInfo` "SLCT-hs version 0.1.0.0, Copyright AUTHORS")
+    print opts
+
+    when (null $ inputFiles opts) $ error "No input files specified"
+
+    inputs <- mapM (`openFile` ReadMode) (inputFiles opts)
+    m <- foldM populate Map.empty inputs
     putStr $ show $ Map.size m
     where
       withInfo opts desc = info (helper <*> opts) $ progDesc desc
