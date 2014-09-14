@@ -1,5 +1,6 @@
 module SLCT.ByteStringHash (
-  shiftAddXor
+  fnv1a64,
+  shiftAddXor,
 ) where
 
 import Data.Bits (unsafeShiftL, unsafeShiftR, xor)
@@ -19,3 +20,18 @@ shiftAddXor = BS.foldl' hash 0
     where
       hash :: Word64 -> Word8 -> Word64
       hash h ch = h `xor` (unsafeShiftL h 5 + unsafeShiftR h 2 + fromIntegral ch)
+
+-- FNV-1a hashing function
+-- FNV Prime for 64 bits: 2^40 + 2^8 + 0xb3
+fnvPrime64 :: Word64
+fnvPrime64 = 1099511628211
+
+fnv1OffsetBasis64 :: Word64
+fnv1OffsetBasis64 = 14695981039346656037
+
+fnv1a64 :: ByteString -> Word64
+{-# INLINE fnv1a64 #-}
+fnv1a64 = BS.foldl' hash fnv1OffsetBasis64
+    where
+      hash :: Word64 -> Word8 -> Word64
+      hash h ch = (h `xor` fromIntegral ch) * fnvPrime64
