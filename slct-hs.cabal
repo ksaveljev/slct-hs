@@ -26,3 +26,4 @@ executable slct-hs
   -- hs-source-dirs:      
   default-language:    Haskell2010
   ghc-options:         -O2 -Wall
+  ghc-prof-options:    -prof -fprof-auto
