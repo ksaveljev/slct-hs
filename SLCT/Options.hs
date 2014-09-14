@@ -16,6 +16,8 @@ data Options = Options { byteOffset :: Int
                        , vectorSize :: Int
                        , wordTableSize :: Int
                        , clusterVectorSize :: Int
+                       , minClusterFreq :: Int
+                       , minWordFreq :: Int
                        , inputFiles :: [String]
                        } deriving (Show)
 
@@ -35,6 +37,8 @@ optionsParser = Options
               <*> option auto (short 'v' <> value 0 <> metavar "VECTORSIZE")
               <*> option auto (short 'w' <> value 100000 <> metavar "WORDTABLESIZE")
               <*> option auto (short 'z' <> value 0 <> metavar "CLUSTERVECTORSIZE")
+              <*> option auto (long "cf" <> value 1000 <> metavar "MINFREQ")
+              <*> option auto (long "wf" <> value 1000 <> metavar "MINFREQ")
               <*> strArguments (metavar "INPUT")
 
 -- We could use `optional` from Control.Applicative but this is just to
