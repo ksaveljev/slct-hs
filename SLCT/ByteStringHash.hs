@@ -2,7 +2,7 @@ module SLCT.ByteStringHash (
   shiftAddXor
 ) where
 
-import Data.Bits (shiftL, shiftR, xor)
+import Data.Bits (unsafeShiftL, unsafeShiftR, xor)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import Data.Word (Word8, Word64)
@@ -14,7 +14,8 @@ import Data.Word (Word8, Word64)
 --       h = h ^ ((h << 5) + (h >> 2) + string[i]);
 --   }
 shiftAddXor :: ByteString -> Word64
+{-# INLINE shiftAddXor #-}
 shiftAddXor = BS.foldl' hash 0
     where
       hash :: Word64 -> Word8 -> Word64
-      hash h ch = h `xor` (shiftL h 5 + shiftR h 2 + fromIntegral ch) 
+      hash h ch = h `xor` (unsafeShiftL h 5 + unsafeShiftR h 2 + fromIntegral ch)
